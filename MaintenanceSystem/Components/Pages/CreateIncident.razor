@@ -1,0 +1,40 @@
+﻿@page "/create-incident"
+
+@inject IncidentService IncidentService
+@using MaintenanceSystem.Models
+@using MaintenanceSystem.Services
+
+
+<h3>Create Incident</h3>
+
+<EditForm Model="@incident"
+          OnValidSubmit="HandleSubmit"
+          FormName="CreateIncidentForm">
+
+    <div class="mb-3">
+        <label>Title</label>
+        <InputText class="form-control" @bind-Value="incident.Title" />
+    </div>
+
+    <div class="mb-3">
+        <label>Description</label>
+        <InputTextArea class="form-control" @bind-Value="incident.Description" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Create Incident
+    </button>
+
+</EditForm>
+
+@code {
+
+    private Incident incident = new();
+      private async Task HandleSubmit()
+    {
+        await IncidentService.CreateIncidentAsync(incident);
+
+        incident = new();
+    }
+
+}
