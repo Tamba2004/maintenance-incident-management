@@ -4,37 +4,60 @@
 @using MaintenanceSystem.Models
 @using MaintenanceSystem.Services
 
+<PageTitle>Nouvel incident</PageTitle>
 
-<h3>Create Incident</h3>
+<h3>Créer un incident</h3>
+
+@if (succès)
+{
+    <div class="alert alert-success">
+        L'incident a été créé avec succès.
+    </div>
+}
 
 <EditForm Model="@incident"
           OnValidSubmit="HandleSubmit"
           FormName="CreateIncidentForm">
 
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
     <div class="mb-3">
-        <label>Title</label>
+        <label class="form-label">Titre</label>
         <InputText class="form-control" @bind-Value="incident.Title" />
+        <ValidationMessage For="@(() => incident.Title)" />
     </div>
 
     <div class="mb-3">
-        <label>Description</label>
+        <label class="form-label">Description</label>
         <InputTextArea class="form-control" @bind-Value="incident.Description" />
+        <ValidationMessage For="@(() => incident.Description)" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Priorité</label>
+        <InputSelect class="form-select" @bind-Value="incident.Priority">
+            @foreach (var priorité in Enum.GetValues<IncidentPriority>())
+            {
+                <option value="@priorité">@priorité</option>
+            }
+        </InputSelect>
     </div>
 
     <button type="submit" class="btn btn-primary">
-        Create Incident
+        Créer un incident
     </button>
 
 </EditForm>
 
 @code {
-
     private Incident incident = new();
-      private async Task HandleSubmit()
+    private bool succès = false;
+
+    private async Task HandleSubmit()
     {
         await IncidentService.CreateIncidentAsync(incident);
-
+        succès = true;
         incident = new();
     }
-
 }
