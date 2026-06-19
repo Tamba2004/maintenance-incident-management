@@ -1,0 +1,78 @@
+﻿@page "/incidents"
+@inject IncidentService IncidentService
+@using MaintenanceSystem.Models
+@using MaintenanceSystem.Services
+
+<PageTitle>Liste des incidents</PageTitle>
+
+<h3>Incidents</h3>
+
+@if (incidents == null)
+{
+    <p>Chargement...</p>
+}
+else if (!incidents.Any())
+{
+    <p>Aucun incident signalé pour le moment.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Titre</th>
+                <th>Statut</th>
+                <th>Priorité</th>
+                <th>Équipement</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var incident in incidents)
+            {
+                <tr>
+                    <td>@incident.Title</td>
+                    <td>
+                        <span class="badge @GetStatusClass(incident.Status)">
+                            @incident.Status
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge @GetPriorityClass(incident.Priority)">
+                            @incident.Priority
+                        </span>
+                    </td>
+                    <td>@(incident.Equipment?.Name ?? "—")</td>
+                    <td>@incident.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Incident>? incidents;
+
+    protected override async Task OnInitializedAsync()
+    {
+        incidents = await IncidentService.GetAllIncidentsAsync();
+    }
+
+    private string GetStatusClass(IncidentStatus status) => status switch
+    {
+        IncidentStatus.Open => "bg-secondary",
+        IncidentStatus.Assigned => "bg-info",
+        IncidentStatus.InProgress => "bg-warning text-dark",
+        IncidentStatus.Resolved => "bg-success",
+        _ => "bg-light text-dark"
+    };
+
+    private string GetPriorityClass(IncidentPriority priority) => priority switch
+    {
+        IncidentPriority.Low => "bg-secondary",
+        IncidentPriority.Normal => "bg-primary",
+        IncidentPriority.High => "bg-warning text-dark",
+        IncidentPriority.Critical => "bg-danger",
+        _ => "bg-light text-dark"
+    };
+}

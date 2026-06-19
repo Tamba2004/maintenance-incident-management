@@ -1,7 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
-using MaintenanceSystem.Data;
+﻿using MaintenanceSystem.Data;
 using MaintenanceSystem.Models;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Threading.Tasks;
 
 namespace MaintenanceSystem.Services
 {
@@ -23,6 +24,15 @@ namespace MaintenanceSystem.Services
             await _context.Incidents.AddAsync(incident);
 
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<Incident>> GetAllIncidentsAsync()
+        {
+            return await _context.Incidents
+                .Include(i => i.Equipment)
+                .Include(i => i.AssignedTo)
+                .OrderByDescending(i => i.CreatedAt)
+                .ToListAsync();
         }
     }
 }
