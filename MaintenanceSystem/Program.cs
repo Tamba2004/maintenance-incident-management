@@ -14,7 +14,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
   builder.Services.AddScoped<IncidentService>();
-  builder.Services.AddScoped<IncidentService>();
 
 var app = builder.Build();
 
