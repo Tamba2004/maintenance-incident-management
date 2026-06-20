@@ -1,6 +1,7 @@
 ﻿@page "/create-incident"
-
+@rendermode InteractiveServer
 @inject IncidentService IncidentService
+@inject EquipmentService EquipmentService
 @using MaintenanceSystem.Models
 @using MaintenanceSystem.Services
 
@@ -44,6 +45,17 @@
         </InputSelect>
     </div>
 
+    <div class="mb-3">
+        <label class="form-label">Équipement</label>
+        <InputSelect class="form-select" @bind-Value="incident.EquipmentId">
+            <option value="">-- Sélectionner un équipement --</option>
+            @foreach (var equipment in equipments)
+            {
+                <option value="@equipment.Id">@equipment.Name</option>
+            }
+        </InputSelect>
+    </div>
+
     <button type="submit" class="btn btn-primary">
         Créer un incident
     </button>
@@ -53,6 +65,12 @@
 @code {
     private Incident incident = new();
     private bool succès = false;
+    private List<Equipment> equipments = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        equipments = await EquipmentService.GetAllEquipmentsAsync();
+    }
 
     private async Task HandleSubmit()
     {
