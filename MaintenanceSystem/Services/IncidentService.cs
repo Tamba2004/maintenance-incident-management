@@ -65,5 +65,33 @@ namespace MaintenanceSystem.Services
 
             await _context.SaveChangesAsync();
         }
+
+        public async Task<int> CountByStatusAsync(IncidentStatus status)
+        {
+            return await _context.Incidents
+                .CountAsync(i => i.Status == status);
+        }
+
+        public async Task<int> CountByPriorityAsync(IncidentPriority priority)
+        {
+            return await _context.Incidents
+                .CountAsync(i => i.Priority == priority);
+        }
+
+        public async Task<int> CountResolvedTodayAsync()
+        {
+            var today = DateTime.Today;
+            return await _context.Incidents
+                .CountAsync(i => i.ResolvedAt != null && i.ResolvedAt.Value.Date == today);
+        }
+
+        public async Task<List<Incident>> GetRecentIncidentsAsync(int count = 5)
+        {
+            return await _context.Incidents
+                .Include(i => i.Equipment)
+                .OrderByDescending(i => i.CreatedAt)
+                .Take(count)
+                .ToListAsync();
+        }
     }
 }

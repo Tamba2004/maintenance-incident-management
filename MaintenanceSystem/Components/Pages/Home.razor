@@ -1,7 +1,147 @@
 ﻿@page "/"
+@rendermode InteractiveServer
+@inject IncidentService IncidentService
+@using MaintenanceSystem.Models
+@using MaintenanceSystem.Services
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Tableau de bord</PageTitle>
 
-<h1>Hello, world!</h1>
+<h3>Tableau de bord</h3>
 
-Welcome to your new app.
+@if (!loaded)
+{
+    <p>Chargement...</p>
+}
+else
+{
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-secondary mb-3">
+                <div class="card-body text-center">
+                    <h1>@countOpen</h1>
+                    <p class="card-text">Ouverts</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info mb-3">
+                <div class="card-body text-center">
+                    <h1>@countAssigned</h1>
+                    <p class="card-text">Assignés</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-dark bg-warning mb-3">
+                <div class="card-body text-center">
+                    <h1>@countInProgress</h1>
+                    <p class="card-text">En cours</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-body text-center">
+                    <h1>@countResolved</h1>
+                    <p class="card-text">Résolus</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-danger mb-3">
+                <div class="card-body text-center">
+                    <h1 class="text-danger">@countCritical</h1>
+                    <p class="card-text">Incidents critiques</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-success mb-3">
+                <div class="card-body text-center">
+                    <h1 class="text-success">@countResolvedToday</h1>
+                    <p class="card-text">Résolus aujourd'hui</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h5>Incidents récents</h5>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Titre</th>
+                <th>Statut</th>
+                <th>Priorité</th>
+                <th>Équipement</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var incident in recentIncidents)
+            {
+                <tr>
+                    <td>
+                        <a href="/incidents/@incident.Id">@incident.Title</a>
+                    </td>
+                    <td>
+                        <span class="badge @GetStatusClass(incident.Status)">
+                            @incident.Status
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge @GetPriorityClass(incident.Priority)">
+                            @incident.Priority
+                        </span>
+                    </td>
+                    <td>@(incident.Equipment?.Name ?? "—")</td>
+                    <td>@incident.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private bool loaded = false;
+
+    private int countOpen;
+    private int countAssigned;
+    private int countInProgress;
+    private int countResolved;
+    private int countCritical;
+    private int countResolvedToday;
+    private List<Incident> recentIncidents = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        countOpen = await IncidentService.CountByStatusAsync(IncidentStatus.Open);
+        countAssigned = await IncidentService.CountByStatusAsync(IncidentStatus.Assigned);
+        countInProgress = await IncidentService.CountByStatusAsync(IncidentStatus.InProgress);
+        countResolved = await IncidentService.CountByStatusAsync(IncidentStatus.Resolved);
+        countCritical = await IncidentService.CountByPriorityAsync(IncidentPriority.Critical);
+        countResolvedToday = await IncidentService.CountResolvedTodayAsync();
+        recentIncidents = await IncidentService.GetRecentIncidentsAsync();
+        loaded = true;
+    }
+
+    private string GetStatusClass(IncidentStatus status) => status switch
+    {
+        IncidentStatus.Open => "bg-secondary",
+        IncidentStatus.Assigned => "bg-info",
+        IncidentStatus.InProgress => "bg-warning text-dark",
+        IncidentStatus.Resolved => "bg-success",
+        _ => "bg-light text-dark"
+    };
+
+    private string GetPriorityClass(IncidentPriority priority) => priority switch
+    {
+        IncidentPriority.Low => "bg-secondary",
+        IncidentPriority.Normal => "bg-primary",
+        IncidentPriority.High => "bg-warning text-dark",
+        IncidentPriority.Critical => "bg-danger",
+        _ => "bg-light text-dark"
+    };
+}
