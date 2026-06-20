@@ -15,6 +15,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
   builder.Services.AddScoped<IncidentService>();
   builder.Services.AddScoped<EquipmentService>();
+builder.Services.AddScoped<TechnicianService>();
 
 var app = builder.Build();
 

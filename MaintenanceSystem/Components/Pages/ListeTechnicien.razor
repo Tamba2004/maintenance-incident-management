@@ -1,0 +1,52 @@
+﻿@page "/technicians"
+@inject TechnicianService TechnicianService
+@using MaintenanceSystem.Models
+@using MaintenanceSystem.Services
+
+<PageTitle>Techniciens</PageTitle>
+
+<h3>Techniciens</h3>
+
+<a href="/create-technician" class="btn btn-primary mb-3">
+    Ajouter un technicien
+</a>
+
+@if (technicians == null)
+{
+    <p>Chargement...</p>
+}
+else if (!technicians.Any())
+{
+    <p>Aucun technicien enregistré pour le moment.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nom complet</th>
+                <th>Email</th>
+                <th>Département</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var technician in technicians)
+            {
+                <tr>
+                    <td>@technician.FullName</td>
+                    <td>@technician.Email</td>
+                    <td>@technician.Department</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Technician>? technicians;
+
+    protected override async Task OnInitializedAsync()
+    {
+        technicians = await TechnicianService.GetAllTechniciansAsync();
+    }
+}

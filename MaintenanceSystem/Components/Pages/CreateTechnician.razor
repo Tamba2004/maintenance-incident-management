@@ -1,0 +1,58 @@
+﻿@page "/create-technician"
+@inject TechnicianService TechnicianService
+@using MaintenanceSystem.Models
+@using MaintenanceSystem.Services
+
+<PageTitle>Nouveau technicien</PageTitle>
+
+<h3>Ajouter un technicien</h3>
+
+@if (succès)
+{
+    <div class="alert alert-success">
+        Le technicien a été ajouté avec succès.
+    </div>
+}
+
+<EditForm Model="@technician"
+          OnValidSubmit="HandleSubmit"
+          FormName="CreateTechnicianForm">
+
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label class="form-label">Nom complet</label>
+        <InputText class="form-control" @bind-Value="technician.FullName" />
+        <ValidationMessage For="@(() => technician.FullName)" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <InputText class="form-control" @bind-Value="technician.Email" />
+        <ValidationMessage For="@(() => technician.Email)" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Département</label>
+        <InputText class="form-control" @bind-Value="technician.Department" />
+        <ValidationMessage For="@(() => technician.Department)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Ajouter
+    </button>
+
+</EditForm>
+
+@code {
+    private Technician technician = new();
+    private bool succès = false;
+
+    private async Task HandleSubmit()
+    {
+        await TechnicianService.CreateTechnicianAsync(technician);
+        succès = true;
+        technician = new();
+    }
+}
