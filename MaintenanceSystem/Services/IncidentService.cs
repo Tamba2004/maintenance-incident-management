@@ -34,5 +34,36 @@ namespace MaintenanceSystem.Services
                 .OrderByDescending(i => i.CreatedAt)
                 .ToListAsync();
         }
+
+        public async Task<Incident?> GetIncidentByIdAsync(int id)
+        {
+            return await _context.Incidents
+                .Include(i => i.Equipment)
+                .Include(i => i.AssignedTo)
+                .FirstOrDefaultAsync(i => i.Id == id);
+        }
+
+        public async Task AssignTechnicianAsync(int incidentId, int technicianId)
+        {
+            var incident = await _context.Incidents.FindAsync(incidentId);
+            if (incident == null) return;
+
+            incident.AssignedToId = technicianId;
+            incident.Status = IncidentStatus.Assigned;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateStatusAsync(int incidentId, IncidentStatus newStatus)
+        {
+            var incident = await _context.Incidents.FindAsync(incidentId);
+            if (incident == null) return;
+
+            incident.Status = newStatus;
+
+            if (newStatus == IncidentStatus.Resolved)
+                incident.ResolvedAt = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+        }
     }
 }

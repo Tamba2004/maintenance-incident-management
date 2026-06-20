@@ -1,0 +1,135 @@
+﻿@page "/incidents/{Id:int}"
+@rendermode InteractiveServer
+@inject IncidentService IncidentService
+@inject TechnicianService TechnicianService
+@inject NavigationManager Navigation
+@using MaintenanceSystem.Models
+@using MaintenanceSystem.Services
+
+<PageTitle>Détail de l'incident</PageTitle>
+
+@if (incident == null)
+{
+    <p>Chargement...</p>
+}
+else
+{
+    <h3>@incident.Title</h3>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <p><strong>Description :</strong> @incident.Description</p>
+            <p>
+                <strong>Statut :</strong>
+                <span class="badge @GetStatusClass(incident.Status)">
+                    @incident.Status
+                </span>
+            </p>
+            <p>
+                <strong>Priorité :</strong>
+                <span class="badge @GetPriorityClass(incident.Priority)">
+                    @incident.Priority
+                </span>
+            </p>
+            <p><strong>Équipement :</strong> @(incident.Equipment?.Name ?? "—")</p>
+            <p><strong>Technicien :</strong> @(incident.AssignedTo?.FullName ?? "Non assigné")</p>
+            <p><strong>Créé le :</strong> @incident.CreatedAt.ToString("yyyy-MM-dd HH:mm")</p>
+            @if (incident.ResolvedAt != null)
+            {
+                <p><strong>Résolu le :</strong> @incident.ResolvedAt.Value.ToString("yyyy-MM-dd HH:mm")</p>
+            }
+        </div>
+    </div>
+
+    @if (incident.Status != IncidentStatus.Resolved)
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>Assigner un technicien</h5>
+                <select class="form-select mb-2" @bind="selectedTechnicianId">
+                    <option value="0">-- Sélectionner un technicien --</option>
+                    @foreach (var tech in technicians)
+                    {
+                        <option value="@tech.Id">@tech.FullName</option>
+                    }
+                </select>
+                <button class="btn btn-info me-2"
+                        @onclick="AssignTechnician"
+                        disabled="@(selectedTechnicianId == 0)">
+                    Assigner
+                </button>
+
+                @if (incident.Status == IncidentStatus.Assigned)
+                {
+                    <button class="btn btn-warning me-2"
+                            @onclick="() => ChangeStatus(IncidentStatus.InProgress)">
+                        Marquer En cours
+                    </button>
+                }
+
+                @if (incident.Status == IncidentStatus.InProgress)
+                {
+                    <button class="btn btn-success"
+                            @onclick="() => ChangeStatus(IncidentStatus.Resolved)">
+                        Marquer Résolu
+                    </button>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-success">
+            Cet incident a été résolu.
+        </div>
+    }
+
+    <a href="/incidents" class="btn btn-secondary">
+        Retour à la liste
+    </a>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private Incident? incident;
+    private List<Technician> technicians = new();
+    private int selectedTechnicianId = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        incident = await IncidentService.GetIncidentByIdAsync(Id);
+        technicians = await TechnicianService.GetAllTechniciansAsync();
+    }
+
+    private async Task AssignTechnician()
+    {
+        if (selectedTechnicianId == 0) return;
+        await IncidentService.AssignTechnicianAsync(Id, selectedTechnicianId);
+        incident = await IncidentService.GetIncidentByIdAsync(Id);
+    }
+
+    private async Task ChangeStatus(IncidentStatus newStatus)
+    {
+        await IncidentService.UpdateStatusAsync(Id, newStatus);
+        incident = await IncidentService.GetIncidentByIdAsync(Id);
+    }
+
+    private string GetStatusClass(IncidentStatus status) => status switch
+    {
+        IncidentStatus.Open => "bg-secondary",
+        IncidentStatus.Assigned => "bg-info",
+        IncidentStatus.InProgress => "bg-warning text-dark",
+        IncidentStatus.Resolved => "bg-success",
+        _ => "bg-light text-dark"
+    };
+
+    private string GetPriorityClass(IncidentPriority priority) => priority switch
+    {
+        IncidentPriority.Low => "bg-secondary",
+        IncidentPriority.Normal => "bg-primary",
+        IncidentPriority.High => "bg-warning text-dark",
+        IncidentPriority.Critical => "bg-danger",
+        _ => "bg-light text-dark"
+    };
+}

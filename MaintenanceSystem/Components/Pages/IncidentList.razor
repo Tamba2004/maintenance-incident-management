@@ -25,6 +25,7 @@ else
                 <th>Priorité</th>
                 <th>Équipement</th>
                 <th>Date</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -44,6 +45,11 @@ else
                     </td>
                     <td>@(incident.Equipment?.Name ?? "—")</td>
                     <td>@incident.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>
+                        <a href="/incidents/@incident.Id" class="btn btn-sm btn-outline-primary">
+                            Voir
+                        </a>
+                    </td>
                 </tr>
             }
         </tbody>

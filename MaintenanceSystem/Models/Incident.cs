@@ -19,6 +19,7 @@ namespace MaintenanceSystem.Models
         public DateTime? ResolvedAt { get; set; }
         public Equipment Equipment { get; set; } = null!;
         public Technician? AssignedTo { get; set; }
-      
+        public int? AssignedToId { get; set; }
+
     }
 }
