@@ -1,0 +1,52 @@
+﻿@page "/equipments"
+@inject EquipmentService EquipmentService
+@using MaintenanceSystem.Models
+@using MaintenanceSystem.Services
+
+<PageTitle>Équipements</PageTitle>
+
+<h3>Équipements</h3>
+
+<a href="/create-equipment" class="btn btn-primary mb-3">
+    Ajouter un équipement
+</a>
+
+@if (equipments == null)
+{
+    <p>Chargement...</p>
+}
+else if (!equipments.Any())
+{
+    <p>Aucun équipement enregistré pour le moment.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Localisation</th>
+                <th>Catégorie</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var equipment in equipments)
+            {
+                <tr>
+                    <td>@equipment.Name</td>
+                    <td>@equipment.Location</td>
+                    <td>@equipment.Category</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Equipment>? equipments;
+
+    protected override async Task OnInitializedAsync()
+    {
+        equipments = await EquipmentService.GetAllEquipmentsAsync();
+    }
+}
